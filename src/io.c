@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
 
 #include "io.h"
+#include "table.h"
 
 InputBuffer* new_input_buffer() {
     InputBuffer* input_buffer = (InputBuffer*)malloc(sizeof(InputBuffer));
@@ -39,4 +38,8 @@ void read_input(InputBuffer* input_buffer) {
 
 void print_prompt() {
     printf("cparql ::: ");
+}
+
+void print_row(Row* row) {
+    printf("Row: [%d, %s, %s]\n", row->id, row->username, row->email);
 }

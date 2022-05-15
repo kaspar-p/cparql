@@ -1,4 +1,3 @@
-
 #ifndef _META_H_INCLUDED_
 #define _META_H_INCLUDED_
 
@@ -12,4 +11,4 @@ typedef enum {
 void process_meta_command(InputBuffer* input_buffer);
 MetaCommandResult do_meta_command(InputBuffer* input_buffer);
 
-#endif
+#endif /* _META_H_INCLUDED_ */

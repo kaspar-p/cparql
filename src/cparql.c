@@ -1,29 +1,21 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "io.h"
 #include "meta.h"
-
-typedef enum {
-    PREPARE_SUCCESS,
-    PREPARE_UNKNOWN_STATEMENT
-} PrepareResult;
-
-
-typedef enum {
-    STATEMENT_INSERT,
-    STATEMENT_SELECT
-} StatementType;
-
-typedef struct {
-    StatementType type;
-} Statement;
+#include "table.h"
+#include "execute.h"
+#include "io.h"
+#include "cparql.h"
 
 PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement) {
     if (strncmp(input_buffer->buffer, "insert", strlen("insert")) == 0) {
         statement->type = STATEMENT_INSERT;
+        int args_assigned = sscanf(input_buffer->buffer, "insert %d %s %s", &(statement->row_to_insert.id), statement->row_to_insert.username, statement->row_to_insert.email);
+
+        if (args_assigned < 3) {
+            return PREPARE_SYNTAX_ERROR;
+        }
         return PREPARE_SUCCESS;
     }
 
@@ -35,19 +27,9 @@ PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
     return PREPARE_UNKNOWN_STATEMENT;
 }
 
-void execute_statement(Statement* statement) {
-    switch (statement->type) {
-    case (STATEMENT_INSERT):
-        printf("Doing an insert!\n");
-        break;
-    case (STATEMENT_SELECT):
-        printf("Doing a select!\n");
-        break;
-    }
-}
-
 int main() {
     InputBuffer* input_buffer = new_input_buffer();
+    Table* table = new_table();
     while (true) {
         print_prompt();
         read_input(input_buffer);
@@ -61,12 +43,22 @@ int main() {
         switch (prepare_statement(input_buffer, &statement)) {
         case (PREPARE_SUCCESS):
             break;
+        case (PREPARE_SYNTAX_ERROR):
+            printf("Syntax error. Failed to parse statement.\n");
+            break;
         case (PREPARE_UNKNOWN_STATEMENT):
             printf("Unrecognized keyword at start of '%s'.\n", input_buffer->buffer);
             continue;
         }
 
-        execute_statement(&statement);
-        printf("Executed.\n");
+        ExecuteResult result = execute_statement(&statement, table);
+        switch (result) {
+        case (EXECUTE_SUCCESS):
+            printf("Executed statement type: %d.\n", statement.type);
+            break;
+        case (EXECUTE_TABLE_FULL):
+            printf("Error, table full.\n");
+            break;
+        }
     }
 }
