@@ -19,5 +19,11 @@ $(BUILD_DIR)/%.o: %.c
 
 .PHONY: clean all
 
+
 clean:
-	rm $(BUILD_DIR)/*.o $(TARGET)
+# Directories to delete
+	rm -rf $(BUILD_DIR)/*.*
+# Files to delete
+	rm $(TARGET)
+# Directories to remake
+	mkdir $(BUILD_DIR)
